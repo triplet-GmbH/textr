@@ -1,0 +1,22 @@
+[project]
+name = "textr"
+authors = [{ name = "Keppla" }]
+version = "0.1.0"
+description = "The engine of good, oldfashioned, boring fun."
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "colorama>=0.4.6",
+    "pynput>=1.8.1",
+    "wcwidth>=0.2.13",
+]
+
+[dependency-groups]
+windows = [
+    "win-unicode-console>=0.5",
+]
+dev = [
+    "mypy>=1.15.0",
+    "types-colorama>=0.4.15.20240311",
+    "types-pynput>=1.8.1.20250318",
+]
