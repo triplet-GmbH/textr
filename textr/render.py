@@ -1,8 +1,16 @@
 import os
 from itertools import islice
 
-from wcwidth import wcswidth  # type: ignore
+
 from colorama.ansi import Fore
+
+
+def real_width(text: str) -> int:
+    try:
+        from wcwidth import wcswidth  # type: ignore
+        return wcswidth(text)
+    except ImportError:
+        return len(text)
 
 
 def clear_screen():
@@ -23,7 +31,7 @@ def bordered(text: str, pos: int, border: str, width: int = 40) -> str:
     left, middle, right = list(border)
     base = left + width * middle + right
    
-    return base[0:pos] + text + base[pos + wcswidth(text):]
+    return base[0:pos] + text + base[pos + real_width(text):]
 
 
 def colorizer(color):

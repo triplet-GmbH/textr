@@ -14,6 +14,12 @@ type PrintModifier = Callable[[str], str]
 
 
 class Asset(object):
+    """ Represents an asset in the game.
+    
+    An asset is an object that can be interacted with by the player.
+    It can be a character, an item, a monster, etc.
+    """
+
     name: str = 'Asset'
     category: str = 'Game'
     order: int = 0
@@ -57,16 +63,16 @@ class Asset(object):
 
 class Game(object):
 
-    print_modifier: list[PrintModifier]
-    assets: list[Asset]
-    categories: list[str]
-    over: str | None
+    _print_modifier: list[PrintModifier]
+    _assets: list[Asset]
+    _categories: list[str]
+    _over: str | None
 
     def __init__(self, categories: list[str] = []):
-        self.print_modifier = []
-        self.assets = []
-        self.categories = categories
-        self.over = None
+        self._print_modifier = []
+        self._assets = []
+        self._categories = categories
+        self._over = None
 
     def register_print_modifiers(self, *modifiers: PrintModifier):
         """ Adds a print modifier to the game.
@@ -78,7 +84,7 @@ class Game(object):
             A function that takes the string to be printed and returns a modified
             string.
         """
-        self.print_modifier.extend(modifiers)
+        self._print_modifier.extend(modifiers)
 
     def add_asset[T: Asset](self, asset: T) -> T:
         """ Adds an asset to the game.
@@ -91,7 +97,7 @@ class Game(object):
         :returns:
             The asset that was added.
         """
-        self.assets.append(asset)
+        self._assets.append(asset)
         return asset
 
     def remove_asset(self, asset: Asset):
@@ -103,7 +109,7 @@ class Game(object):
         :param asset:
             The asset to remove.
         """
-        self.assets.remove(asset)
+        self._assets.remove(asset)
 
     def trigger_event(self, type: str, data: Any):
         """ Triggers an event on all assets
@@ -132,7 +138,7 @@ class Game(object):
         :param type:
             The type of event to trigger.
         """
-        for asset in self.assets:
+        for asset in self._assets:
             asset._trigger_event(self, type, data)
 
     def query[T](self, type: str, data: T) -> T:
@@ -168,7 +174,7 @@ class Game(object):
         :param data:
             The initial data to pass to the query.
         """
-        for asset in self.assets:
+        for asset in self._assets:
             data = asset._query(self, type, data)
         return data
 
@@ -181,7 +187,7 @@ class Game(object):
             The reason for the game over, that is displayed to the player.
             E.g. "You died" or "You won".
         """
-        self.over = reason
+        self._over = reason
 
     def log(self, text: str):
         """ Informs the player about something.
@@ -191,21 +197,21 @@ class Game(object):
         """
         self._print(text)
 
-    def asset_categories(self) -> Iterable[tuple[str, Iterable[Asset]]]:
+    def _asset_categories(self) -> Iterable[tuple[str, Iterable[Asset]]]:
         """ Groups the assets by their category."""
         def order(a: Asset) -> tuple[int, int]:
-            return ((self.categories.index(a.category), a.order)
-                        if a.category in self.categories
+            return ((self._categories.index(a.category), a.order)
+                        if a.category in self._categories
                         else (999, a.order))
 
         def group(a: Asset) -> str:
             return a.category
 
-        visible_assets = (a for a in self.assets if a.visible(self))
+        visible_assets = (a for a in self._assets if a.visible(self))
 
         return groupby(sorted(visible_assets, key=order), key=group)
 
-    def render_asset(self, asset: Asset, focus: int) -> Iterable[str]:
+    def _render_asset(self, asset: Asset, focus: int) -> Iterable[str]:
         desc = list(asset.description(self))
         actions = list(asset.actions(self))
 
@@ -228,11 +234,11 @@ class Game(object):
 
         focus = 0
 
-        while self.over is None:
+        while self._over is None:
             offset = 0
             all_actions = []
 
-            for category, assets in self.asset_categories():
+            for category, assets in self._asset_categories():
 
                 self._print('')
                 self._print(bordered(' ' + category + ' ', 3, '==='))
@@ -242,7 +248,7 @@ class Game(object):
                     actions = [list(asset.actions(self)) for asset in row]
                     offsets = [sum(len(a) for a in actions[0:i]) for i in range(len(actions))]
 
-                    lines = [self.render_asset(asset, focus - offset - o)
+                    lines = [self._render_asset(asset, focus - offset - o)
                                     for asset, o
                                     in zip(row, offsets)]
 
@@ -268,14 +274,14 @@ class Game(object):
 
         clear_screen()
 
-        self._print(self.over)
+        self._print(self._over)
 
     def _print(self, text):
         """ Prints text to the screen.
         
         Applies all print modifiers to the text before printing 
         """
-        print(reduce(lambda t, f: f(t), self.print_modifier, text))
+        print(reduce(lambda t, f: f(t), self._print_modifier, text))
 
 
 def get_navigation():

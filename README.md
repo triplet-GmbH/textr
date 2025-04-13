@@ -14,6 +14,23 @@ By itself, it's not really usable, since its a library.
 
 ## Usage
 
-### Minimal game
+### Example Game: Find the Mimic
 
-TBD
+In this game, you're presented with two Chests. If you open the normal chest,
+you get a treasure and win. If you open the mimic chest, you die and lose.
+
+
+    class Chest(Asset):
+        name = 'Chest'
+
+        def actions(self, game):
+            pass
+    
+    class Mimic(Asset):
+        name = 'Chest
+        
+        def actions(self, game):
+            pass
+
+    game = Game()
+    game.add_asset
